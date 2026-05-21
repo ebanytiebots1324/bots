@@ -19,57 +19,94 @@ BOT_TOKENS = [
     "8784577185:AAEsqS036U2aWV4ElydYvBAM-bSiHwWhFGI",
 ]
 
-# ========== ИНФО О БОТАХ ==========
-BOT_INFO = [
-    {"name": "🎮 CS2 ПРАЙМ", "reward": "Прайм статус в CS2 НАВСЕГДА!"},
-    {"name": "🔫 CS2 СКИНЫ", "reward": "5 крутых скинов + кейсы!"},
-    {"name": "⭐ РОБУКСЫ", "reward": "1000 ROBUX на аккаунт!"},
-    {"name": "💀 СТЕНДОФФ2", "reward": "10.000 ГОЛДЫ + легендарные скины!"},
-    {"name": "🖼️ ТГ НФТ", "reward": "Уникальная NFT карточка Telegram!"},
-    {"name": "✨ ТГ ЗВЁЗДЫ", "reward": "1000 Telegram Stars!"},
-    {"name": "🎬 КИНОПОИСК", "reward": "Подписка Кинопоиск/Premier на 1 МЕСЯЦ!"},
-    {"name": "💎 BRAWL STARS", "reward": "1000 ГЕМОВ в Brawl Stars!"},
-    {"name": "⭐ ТГ ПРЕМИУМ", "reward": "Telegram Premium на 1 МЕСЯЦ!"}
+# ========== ДИЗАЙН БОТОВ ==========
+BOT_DESIGN = [
+    {
+        "name": "🎮 CS2 ПРАЙМ",
+        "emoji": "🎮",
+        "color": "🔫",
+        "reward": "Прайм статус в CS2 НАВСЕГДА!",
+        "short_reward": "Прайм статус"
+    },
+    {
+        "name": "🔫 CS2 СКИНЫ",
+        "emoji": "🔫",
+        "color": "⚡",
+        "reward": "5 крутых скинов + кейсы + нож в подарок!",
+        "short_reward": "5 скинов"
+    },
+    {
+        "name": "⭐ РОБУКСЫ",
+        "emoji": "⭐",
+        "color": "💰",
+        "reward": "1000 ROBUX на аккаунт!",
+        "short_reward": "1000 ROBUX"
+    },
+    {
+        "name": "💀 СТЕНДОФФ2",
+        "emoji": "💀",
+        "color": "🔥",
+        "reward": "10.000 ГОЛДЫ + легендарные скины!",
+        "short_reward": "10.000 голды"
+    },
+    {
+        "name": "🖼️ ТГ НФТ",
+        "emoji": "🖼️",
+        "color": "🎨",
+        "reward": "Уникальная NFT карточка Telegram!",
+        "short_reward": "NFT карта"
+    },
+    {
+        "name": "✨ ТГ ЗВЁЗДЫ",
+        "emoji": "✨",
+        "color": "🌟",
+        "reward": "1000 Telegram Stars!",
+        "short_reward": "1000 Stars"
+    },
+    {
+        "name": "🎬 КИНОПОИСК",
+        "emoji": "🎬",
+        "color": "📽️",
+        "reward": "Подписка Кинопоиск/Premier на 1 МЕСЯЦ!",
+        "short_reward": "Подписка"
+    },
+    {
+        "name": "💎 BRAWL STARS",
+        "emoji": "💎",
+        "color": "⚔️",
+        "reward": "1000 ГЕМОВ в Brawl Stars!",
+        "short_reward": "1000 гемов"
+    },
+    {
+        "name": "⭐ ТГ ПРЕМИУМ",
+        "emoji": "⭐",
+        "color": "💎",
+        "reward": "Telegram Premium на 1 МЕСЯЦ!",
+        "short_reward": "TG Premium"
+    }
 ]
 
 ADMINS = ['CH4EBYRAHKA', 'Kyrsanik', 'dmitriiiy_22']
 
 CHANNELS = [
-    {"name": "ТЕМКИ", "url": "https://t.me/+X6hEJTznwuc4NWIy"},
-    {"name": "ТЕЛКИ", "url": "https://t.me/+ZAmRG9tQciU0MTNi"},
-    {"name": "ЛЬГОТЫ", "url": "https://t.me/+sqs0iLp5T49iNDEy"}
+    {"name": "🎮 ТЕМКИ", "url": "https://t.me/+X6hEJTznwuc4NWIy"},
+    {"name": "👾 ТЕЛКИ", "url": "https://t.me/+ZAmRG9tQciU0MTNi"},
+    {"name": "🎁 ЛЬГОТЫ", "url": "https://t.me/+sqs0iLp5T49iNDEy"}
 ]
 
 TASKS = [
-    {"name": "СБЕРПРАЙМ", "url": "https://clck.ru/3Thj5H", "button": "💳 ОФОРМИТЬ ЗА 1₽"},
-    {"name": "ОПРОС", "url": "https://clck.ru/3ThjD6", "button": "📊 ПРОЙТИ ОПРОС"}
+    {"name": "💳 СБЕРПРАЙМ", "url": "https://clck.ru/3Thj5H", "button": "💳 ОФОРМИТЬ ЗА 1₽"},
+    {"name": "📊 ОПРОС", "url": "https://clck.ru/3ThjD6", "button": "📊 ПРОЙТИ ОПРОС"}
 ]
 
 # ========== ГЕНЕРАТОР ПРОМОКОДОВ ==========
 def generate_promo(user_id, bot_name):
-    """
-    Генерирует уникальный промокод на основе:
-    - ID пользователя
-    - Названия бота
-    - Текущей даты
-    - Случайных символов
-    """
-    # Очищаем название бота от эмодзи
     clean_name = ''.join(c for c in bot_name if c.isalnum() or c == ' ').strip().replace(' ', '')[:4].upper()
-    
-    # Берем последние 4 цифры ID пользователя
     user_part = str(user_id)[-4:]
-    
-    # Текущая дата (день+месяц)
     date_part = datetime.now().strftime('%d%m')
-    
-    # Случайные буквы
     random_letters = ''.join(random.choices(string.ascii_uppercase, k=3))
-    
-    # Случайные цифры
     random_numbers = ''.join(random.choices(string.digits, k=3))
     
-    # Собираем промокод в разных форматах
     formats = [
         f"{clean_name}-{user_part}-{random_letters}",
         f"{random_letters}{user_part}{date_part}",
@@ -77,8 +114,6 @@ def generate_promo(user_id, bot_name):
         f"{date_part}-{random_letters}-{user_part}",
         f"{random_letters}-{random_numbers}-{user_part}"
     ]
-    
-    # Выбираем случайный формат
     return random.choice(formats)
 
 # ========== БАЗА ДАННЫХ ==========
@@ -145,30 +180,34 @@ def get_all_users(db_name):
 def is_admin(username):
     return username and username in ADMINS
 
-# ========== КЛАВИАТУРЫ ==========
+# ========== ДИЗАЙН КЛАВИАТУР ==========
 def main_menu(is_admin_user=False):
-    btn = [[InlineKeyboardButton("🎁 ПОЛУЧИТЬ НАГРАДУ", callback_data="start")]]
+    btn = [
+        [InlineKeyboardButton("🎁 ПОЛУЧИТЬ НАГРАДУ 🎁", callback_data="start")]
+    ]
     if is_admin_user:
-        btn.append([InlineKeyboardButton("👑 АДМИН", callback_data="admin")])
+        btn.append([InlineKeyboardButton("👑 АДМИН-ПАНЕЛЬ 👑", callback_data="admin")])
     return InlineKeyboardMarkup(btn)
 
 def subs_menu():
-    kb = [[InlineKeyboardButton(f"📢 {ch['name']}", url=ch['url'])] for ch in CHANNELS]
-    kb.append([InlineKeyboardButton("✅ ПРОВЕРИТЬ", callback_data="check")])
-    kb.append([InlineKeyboardButton("❌ ОТМЕНА", callback_data="cancel")])
+    kb = []
+    for ch in CHANNELS:
+        kb.append([InlineKeyboardButton(f"🔗 {ch['name']} | ПОДПИСАТЬСЯ", url=ch['url'])])
+    kb.append([InlineKeyboardButton("✅ ПРОВЕРИТЬ ПОДПИСКИ ✅", callback_data="check")])
+    kb.append([InlineKeyboardButton("❌ ОТМЕНИТЬ ❌", callback_data="cancel")])
     return InlineKeyboardMarkup(kb)
 
 def task_menu(num, url, btn):
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton(btn, url=url)],
-        [InlineKeyboardButton("📸 ОТПРАВИТЬ СКРИНШОТ", callback_data=f"scr_{num}")],
-        [InlineKeyboardButton("◀️ НАЗАД", callback_data="menu")]
+        [InlineKeyboardButton(f"🔗 {btn} 🔗", url=url)],
+        [InlineKeyboardButton("📸 ОТПРАВИТЬ СКРИНШОТ 📸", callback_data=f"scr_{num}")],
+        [InlineKeyboardButton("◀️ НАЗАД В МЕНЮ ◀️", callback_data="menu")]
     ])
 
 def admin_menu():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("📊 СТАТИСТИКА", callback_data="stats")],
-        [InlineKeyboardButton("👥 ПОЛЬЗОВАТЕЛИ", callback_data="users")],
+        [InlineKeyboardButton("👥 СПИСОК ПОЛЬЗОВАТЕЛЕЙ", callback_data="users")],
         [InlineKeyboardButton("◀️ НАЗАД", callback_data="menu")]
     ])
 
@@ -182,42 +221,55 @@ async def check_reminders(context: ContextTypes.DEFAULT_TYPE):
     cur.execute('SELECT user_id, current_task FROM users WHERE waiting=1 AND (reminder=0 OR last_activity < ?)', (two_hours_ago,))
     for uid, task in cur.fetchall():
         try:
-            await context.bot.send_message(uid, f"⏰ НАПОМИНАНИЕ!\n\nТы остановился на задании {task}/2\n\n📸 Отправь скриншот!")
+            await context.bot.send_message(uid, 
+                f"⏰ ═══════════════════ ⏰\n\n"
+                f"🔔 НАПОМИНАНИЕ!\n\n"
+                f"📋 Ты остановился на задании {task}/2\n\n"
+                f"📸 Отправь скриншот, чтобы продолжить!\n\n"
+                f"⏰ ═══════════════════ ⏰")
             cur.execute('UPDATE users SET reminder=1, last_activity=? WHERE user_id=?', (now.strftime('%Y-%m-%d %H:%M:%S'), uid))
             conn.commit()
         except:
             pass
     conn.close()
 
-# ========== ОБРАБОТЧИКИ ==========
+# ========== ОСНОВНЫЕ ОБРАБОТЧИКИ ==========
 async def start(update, context):
     user = update.effective_user
     db = context.bot_data['db']
     bot_idx = context.bot_data['bot_idx']
-    info = BOT_INFO[bot_idx]
+    design = BOT_DESIGN[bot_idx]
     
     update_user(db, user.id, user.username, user.first_name, step=0)
     
     text = f"""
-<b>{info['name']}</b>
+{design['emoji']} ═══════════════════════════ {design['emoji']}
+         {design['name']}
+{design['emoji']} ═══════════════════════════ {design['emoji']}
 
-━━━━━━━━━━━━━━━━━━━━━━
-Привет, {user.first_name}! 👋
-━━━━━━━━━━━━━━━━━━━━━━
+✨ ПРИВЕТ, {user.first_name}! ✨
 
-<b>📋 ЧТО НУЖНО СДЕЛАТЬ:</b>
-• Подписаться на каналы
-• Оформить СберПрайм за 1₽
-• Пройти опрос
+{design['color']}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{design['color']}
 
-<b>🎁 ЧТО ТЫ ПОЛУЧИШЬ:</b>
-✅ {info['reward']}
+📋 ЧТО НУЖНО СДЕЛАТЬ:
 
-━━━━━━━━━━━━━━━━━━━━━━
-<b>⏱ Весь процесс занимает 2 минуты!</b>
-━━━━━━━━━━━━━━━━━━━━━━
+   1️⃣ ПОДПИСАТЬСЯ на каналы
+   2️⃣ ОФОРМИТЬ СберПрайм за 1₽
+   3️⃣ ПРОЙТИ короткий опрос
 
-👇 <b>Нажми на кнопку:</b>
+{design['color']}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{design['color']}
+
+🎁 ЧТО ТЫ ПОЛУЧИШЬ:
+
+   ✅ {design['reward']}
+
+{design['color']}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{design['color']}
+
+⏱ ВЕСЬ ПРОЦЕСС ЗАНИМАЕТ 2 МИНУТЫ!
+
+{design['emoji']} ═══════════════════════════ {design['emoji']}
+
+👇 НАЖМИ НА КНОПКУ 👇
 """
     await update.message.reply_text(text, parse_mode='HTML', reply_markup=main_menu(is_admin(user.username)))
 
@@ -227,7 +279,7 @@ async def callback(update, context):
     user = q.from_user
     db = context.bot_data['db']
     bot_idx = context.bot_data['bot_idx']
-    info = BOT_INFO[bot_idx]
+    design = BOT_DESIGN[bot_idx]
     data = q.data
 
     # АДМИНКА
@@ -235,7 +287,19 @@ async def callback(update, context):
         await q.edit_message_text("👑 АДМИН-ПАНЕЛЬ", reply_markup=admin_menu())
     elif data == "stats" and is_admin(user.username):
         total, t1, t2, done = get_stats(db)
-        await q.edit_message_text(f"📊 СТАТИСТИКА\n\n👥 Всего: {total}\n✅ Задание 1: {t1}\n✅ Задание 2: {t2}\n🎁 Получили промокод: {done}", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ НАЗАД", callback_data="admin")]]))
+        text = f"""
+📊 ═══════════════════ 📊
+      СТАТИСТИКА
+📊 ═══════════════════ 📊
+
+👥 ВСЕГО ПОЛЬЗОВАТЕЛЕЙ: {total}
+✅ ВЫПОЛНИЛИ ЗАДАНИЕ 1: {t1}
+✅ ВЫПОЛНИЛИ ЗАДАНИЕ 2: {t2}
+🎁 ПОЛУЧИЛИ ПРОМОКОД: {done}
+
+📊 ═══════════════════ 📊
+"""
+        await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ НАЗАД", callback_data="admin")]]))
     elif data == "users" and is_admin(user.username):
         users = get_all_users(db)
         text = "👥 ПОЛЬЗОВАТЕЛИ:\n\n"
@@ -250,26 +314,52 @@ async def callback(update, context):
     # ОСНОВНОЙ ФЛОУ
     elif data == "start":
         update_user(db, user.id, user.username, user.first_name, step=1)
-        await q.edit_message_text(f"📢 ПОДПИШИСЬ НА КАНАЛЫ:", reply_markup=subs_menu())
+        text = f"""
+📢 ═══════════════════ 📢
+    ПОДПИШИСЬ НА КАНАЛЫ
+📢 ═══════════════════ 📢
+
+🔔 ЧТОБЫ ПОЛУЧИТЬ {design['short_reward']}, 
+   ПОДПИШИСЬ НА КАНАЛЫ НИЖЕ!
+
+👇 ПОСЛЕ ПОДПИСКИ НАЖМИ ПРОВЕРИТЬ 👇
+"""
+        await q.edit_message_text(text, reply_markup=subs_menu())
     
     elif data == "check":
         update_user(db, user.id, user.username, user.first_name, subs=1, last_activity=datetime.now().strftime('%Y-%m-%d %H:%M:%S'), reminder=0)
-        await q.edit_message_text(f"✅ ПОДПИСКИ ПОДТВЕРЖДЕНЫ!\n\n📌 ЗАДАНИЕ 1/2:\nОформи СберПрайм за 1₽\n\n🔗 Нажми на кнопку, оформи и отправь скриншот:",
-                                  reply_markup=task_menu(1, TASKS[0]['url'], TASKS[0]['button']))
+        text = f"""
+✅ ═══════════════════ ✅
+    ПОДПИСКИ ПОДТВЕРЖДЕНЫ!
+✅ ═══════════════════ ✅
+
+📋 ЗАДАНИЕ 1/2: СБЕРПРАЙМ
+
+🔹 ОФОРМИ ПОДПИСКУ СБЕРПРАЙМ ЗА 1₽
+🔹 СДЕЛАЙ СКРИНШОТ ПОДТВЕРЖДЕНИЯ
+🔹 ОТПРАВЬ СКРИНШОТ СЮДА
+
+👇 НАЖМИ НА КНОПКУ, ОФОРМИ И ОТПРАВЬ СКРИН 👇
+"""
+        await q.edit_message_text(text, reply_markup=task_menu(1, TASKS[0]['url'], TASKS[0]['button']))
     
     elif data == "menu":
         text = f"""
-<b>{info['name']}</b>
+{design['emoji']} ═══════════════════════════ {design['emoji']}
+         {design['name']}
+{design['emoji']} ═══════════════════════════ {design['emoji']}
 
-━━━━━━━━━━━━━━━━━━━━━━
-<b>📋 ЧТО НУЖНО СДЕЛАТЬ:</b>
-• Подписаться на каналы
-• Оформить СберПрайм за 1₽
-• Пройти опрос
+📋 ЧТО НУЖНО СДЕЛАТЬ:
 
-<b>🎁 ЧТО ТЫ ПОЛУЧИШЬ:</b>
-✅ {info['reward']}
-━━━━━━━━━━━━━━━━━━━━━━
+   1️⃣ ПОДПИСАТЬСЯ на каналы
+   2️⃣ ОФОРМИТЬ СберПрайм за 1₽
+   3️⃣ ПРОЙТИ короткий опрос
+
+🎁 ЧТО ТЫ ПОЛУЧИШЬ:
+
+   ✅ {design['reward']}
+
+{design['emoji']} ═══════════════════════════ {design['emoji']}
 """
         await q.edit_message_text(text, parse_mode='HTML', reply_markup=main_menu(is_admin(user.username)))
     
@@ -279,13 +369,39 @@ async def callback(update, context):
     
     elif data == "scr_1":
         update_user(db, user.id, user.username, user.first_name, waiting=1, current_task=1, last_activity=datetime.now().strftime('%Y-%m-%d %H:%M:%S'), reminder=0)
-        await q.edit_message_text(f"📸 ОТПРАВЬ СКРИНШОТ ПОДТВЕРЖДЕНИЯ ОФОРМЛЕНИЯ СБЕРПРАЙМА\n\n⏱ Проверка займет 3 секунды...")
+        text = f"""
+📸 ═══════════════════ 📸
+    ОТПРАВЬ СКРИНШОТ
+📸 ═══════════════════ 📸
+
+ЧТО ДОЛЖНО БЫТЬ НА СКРИНЕ:
+   ✅ ПОДТВЕРЖДЕНИЕ ОФОРМЛЕНИЯ
+      СБЕРПРАЙМА ЗА 1₽
+
+⏱ ПРОВЕРКА ЗАЙМЕТ 3 СЕКУНДЫ
+
+📸 ═══════════════════ 📸
+"""
+        await q.edit_message_text(text)
     
     elif data == "scr_2":
         udata = get_user(db, user.id)
         if udata and udata[1] == 1:
             update_user(db, user.id, user.username, user.first_name, waiting=1, current_task=2, last_activity=datetime.now().strftime('%Y-%m-%d %H:%M:%S'), reminder=0)
-            await q.edit_message_text(f"📸 ОТПРАВЬ СКРИНШОТ ПОДТВЕРЖДЕНИЯ ПРОХОЖДЕНИЯ ОПРОСА\n\n⏱ Проверка займет 3 секунды...")
+            text = f"""
+📸 ═══════════════════ 📸
+    ОТПРАВЬ СКРИНШОТ
+📸 ═══════════════════ 📸
+
+ЧТО ДОЛЖНО БЫТЬ НА СКРИНЕ:
+   ✅ ПОДТВЕРЖДЕНИЕ ПРОХОЖДЕНИЯ
+      ОПРОСА
+
+⏱ ПРОВЕРКА ЗАЙМЕТ 3 СЕКУНДЫ
+
+📸 ═══════════════════ 📸
+"""
+            await q.edit_message_text(text)
         else:
             await q.answer("Сначала выполни задание 1!", show_alert=True)
 
@@ -293,7 +409,7 @@ async def photo(update, context):
     user = update.effective_user
     db = context.bot_data['db']
     bot_idx = context.bot_data['bot_idx']
-    info = BOT_INFO[bot_idx]
+    design = BOT_DESIGN[bot_idx]
     
     udata = get_user(db, user.id)
     if not udata or udata[4] != 1:
@@ -306,38 +422,58 @@ async def photo(update, context):
     
     if task == 1:
         update_user(db, user.id, user.username, user.first_name, task1=1, waiting=0, last_activity=datetime.now().strftime('%Y-%m-%d %H:%M:%S'), reminder=0)
-        await update.message.reply_text(f"✅ ЗАДАНИЕ 1 ВЫПОЛНЕНО!\n\n📌 ЗАДАНИЕ 2/2: ПРОЙДИ ОПРОС\n\n🔗 Нажми на кнопку, пройди и отправь скриншот:",
-                                        reply_markup=task_menu(2, TASKS[1]['url'], TASKS[1]['button']))
+        text = f"""
+✅ ═══════════════════ ✅
+    ЗАДАНИЕ 1 ВЫПОЛНЕНО!
+✅ ═══════════════════ ✅
+
+📋 ЗАДАНИЕ 2/2: ОПРОС
+
+🔹 ПРОЙДИ КОРОТКИЙ ОПРОС
+🔹 СДЕЛАЙ СКРИНШОТ
+🔹 ОТПРАВЬ СКРИНШОТ СЮДА
+
+👇 НАЖМИ НА КНОПКУ, ПРОЙДИ И ОТПРАВЬ СКРИН 👇
+"""
+        await update.message.reply_text(text, reply_markup=task_menu(2, TASKS[1]['url'], TASKS[1]['button']))
     else:
-        # ГЕНЕРИРУЕМ УНИКАЛЬНЫЙ ПРОМОКОД
-        promo_code = generate_promo(user.id, info['name'])
-        
-        # Сохраняем промокод в БД
+        promo_code = generate_promo(user.id, design['name'])
         update_user(db, user.id, user.username, user.first_name, task2=1, waiting=0, last_activity=datetime.now().strftime('%Y-%m-%d %H:%M:%S'), reminder=0, step=3, promo_code=promo_code)
         
-        await update.message.reply_text(f"""
+        text = f"""
+{design['emoji']} ═══════════════════════════ {design['emoji']}
+         🎉 ПОЗДРАВЛЯЮ! 🎉
+{design['emoji']} ═══════════════════════════ {design['emoji']}
+
 ✅ ВСЕ ЗАДАНИЯ ВЫПОЛНЕНЫ!
 
-━━━━━━━━━━━━━━━━━━━━━━
+{design['color']}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{design['color']}
+
 🎁 ТВОЯ НАГРАДА:
-{info['reward']}
+   {design['reward']}
 
 🔑 ТВОЙ УНИКАЛЬНЫЙ ПРОМОКОД:
-<code>{promo_code}</code>
 
-━━━━━━━━━━━━━━━━━━━━━━
-📝 Инструкция по активации:
-1. Скопируй промокод (нажми на него)
-2. Введи в игре/приложении
-3. Получи награду сразу!
+   ╔══════════════════════╗
+   ║  <code>{promo_code}</code>  ║
+   ╚══════════════════════╝
 
-⚠️ Промокод действителен 24 часа!
-━━━━━━━━━━━━━━━━━━━━━━
+{design['color']}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{design['color']}
 
-Спасибо за участие! 🎮
-""", parse_mode='HTML')
+📝 ИНСТРУКЦИЯ:
+   1️⃣ Скопируй промокод (нажми на него)
+   2️⃣ Введи в игре/приложении
+   3️⃣ Получи награду СРАЗУ!
 
-# ========== ЗАПУСК ОДНОГО БОТА ==========
+⚠️ ПРОМОКОД ДЕЙСТВИТЕЛЕН 24 ЧАСА!
+
+{design['emoji']} ═══════════════════════════ {design['emoji']}
+         СПАСИБО ЗА УЧАСТИЕ! 🎮
+{design['emoji']} ═══════════════════════════ {design['emoji']}
+"""
+        await update.message.reply_text(text, parse_mode='HTML')
+
+# ========== ЗАПУСК БОТА ==========
 async def run_bot(token, idx):
     db = f'users_{idx+1}.db'
     init_db(db)
@@ -356,7 +492,7 @@ async def run_bot(token, idx):
     await app.initialize()
     await app.start()
     await app.updater.start_polling()
-    print(f"✅ {BOT_INFO[idx]['name']} запущен")
+    print(f"✅ {BOT_DESIGN[idx]['name']} запущен")
     
     while True:
         await asyncio.sleep(1)
@@ -365,7 +501,7 @@ async def run_bot(token, idx):
 async def main():
     print("🚀 ЗАПУСК 9 БОТОВ...")
     print(f"👑 Админы: {', '.join(ADMINS)}")
-    print("🎲 Промокоды генерируются автоматически!")
+    print("🎨 ПРЕМИУМ ДИЗАЙН АКТИВИРОВАН!")
     
     tasks = []
     for i, token in enumerate(BOT_TOKENS):
