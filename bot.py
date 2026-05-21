@@ -1,9 +1,6 @@
-import os
 import asyncio
 import sqlite3
-import re
 from datetime import datetime, timedelta
-from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 
@@ -20,16 +17,17 @@ BOT_TOKENS = [
     "8784577185:AAEsqS036U2aWV4ElydYvBAM-bSiHwWhFGI",
 ]
 
-BOT_NAMES = [
-    "🎮 CS2 ПРАЙМ",
-    "🔫 CS2 СКИНЫ",
-    "⭐ РОБУКСЫ",
-    "💀 СТЕНДОФФ2",
-    "🖼️ ТГ НФТ",
-    "✨ ТГ ЗВЁЗДЫ",
-    "🎬 КИНОПОИСК",
-    "💎 BRAWL STARS",
-    "⭐ ТГ ПРЕМИУМ"
+# ========== ИНФО О БОТАХ (ВСЕ С ПРОМОКОДАМИ) ==========
+BOT_INFO = [
+    {"name": "🎮 CS2 ПРАЙМ", "reward": "Прайм статус в CS2 НАВСЕГДА!", "promo": "CS2PRIME2026"},
+    {"name": "🔫 CS2 СКИНЫ", "reward": "5 крутых скинов + кейсы!", "promo": "CS2SKINS2026"},
+    {"name": "⭐ РОБУКСЫ", "reward": "1000 ROBUX на аккаунт!", "promo": "ROBUX2026"},
+    {"name": "💀 СТЕНДОФФ2", "reward": "10.000 ГОЛДЫ + легендарные скины!", "promo": "STANDOFF2026"},
+    {"name": "🖼️ ТГ НФТ", "reward": "Уникальная NFT карточка Telegram!", "promo": "TGNFT2026"},
+    {"name": "✨ ТГ ЗВЁЗДЫ", "reward": "1000 Telegram Stars!", "promo": "TGSTARS2026"},
+    {"name": "🎬 КИНОПОИСК", "reward": "Подписка Кинопоиск/Premier на 1 МЕСЯЦ!", "promo": "KINOPOISK2026"},
+    {"name": "💎 BRAWL STARS", "reward": "1000 ГЕМОВ в Brawl Stars!", "promo": "BRAWL2026"},
+    {"name": "⭐ ТГ ПРЕМИУМ", "reward": "Telegram Premium на 1 МЕСЯЦ!", "promo": "TGPREMIUM2026"}
 ]
 
 ADMINS = ['CH4EBYRAHKA', 'Kyrsanik', 'dmitriiiy_22']
@@ -41,34 +39,25 @@ CHANNELS = [
 ]
 
 TASKS = [
-    {"name": "СБЕРПРАЙМ", "desc": "Оформи подписку СберПрайм за 1 рубль", "url": "https://clck.ru/3Thj5H", "button": "💳 ОФОРМИТЬ"},
-    {"name": "ОПРОС", "desc": "Пройди короткий опрос", "url": "https://clck.ru/3ThjD6", "button": "📊 ПРОЙТИ"}
+    {"name": "СБЕРПРАЙМ", "url": "https://clck.ru/3Thj5H", "button": "💳 ОФОРМИТЬ ЗА 1₽"},
+    {"name": "ОПРОС", "url": "https://clck.ru/3ThjD6", "button": "📊 ПРОЙТИ ОПРОС"}
 ]
 
-flask_app = Flask(__name__)
-
-@flask_app.route('/')
-def index():
-    return 'Боты работают!'
-
-def run_flask():
-    port = int(os.environ.get('PORT', 3000))
-    flask_app.run(host='0.0.0.0', port=port)
-
+# ========== БАЗА ДАННЫХ ==========
 def init_db(db_name):
     conn = sqlite3.connect(db_name)
     conn.execute('''CREATE TABLE IF NOT EXISTS users (
         user_id INTEGER PRIMARY KEY,
         username TEXT,
+        first_name TEXT,
         step INTEGER DEFAULT 0,
-        task1_done INTEGER DEFAULT 0,
-        task2_done INTEGER DEFAULT 0,
-        subs_done INTEGER DEFAULT 0,
-        waiting_screenshot INTEGER DEFAULT 0,
+        task1 INTEGER DEFAULT 0,
+        task2 INTEGER DEFAULT 0,
+        subs INTEGER DEFAULT 0,
+        waiting INTEGER DEFAULT 0,
         current_task INTEGER DEFAULT 0,
         last_activity TEXT,
-        reminder_sent INTEGER DEFAULT 0,
-        player_id TEXT,
+        reminder INTEGER DEFAULT 0,
         date TEXT
     )''')
     conn.commit()
@@ -77,16 +66,16 @@ def init_db(db_name):
 def get_user(db_name, user_id):
     conn = sqlite3.connect(db_name)
     cur = conn.cursor()
-    cur.execute('SELECT step, task1_done, task2_done, subs_done, waiting_screenshot, current_task, last_activity, reminder_sent, player_id FROM users WHERE user_id = ?', (user_id,))
+    cur.execute('SELECT step, task1, task2, subs, waiting, current_task FROM users WHERE user_id = ?', (user_id,))
     row = cur.fetchone()
     conn.close()
     return row
 
-def update_user(db_name, user_id, username, **kwargs):
+def update_user(db_name, user_id, username, first_name, **kwargs):
     conn = sqlite3.connect(db_name)
     if not get_user(db_name, user_id):
-        conn.execute('INSERT INTO users (user_id, username, date, last_activity) VALUES (?, ?, ?, ?)',
-                     (user_id, username, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+        conn.execute('INSERT INTO users (user_id, username, first_name, date, last_activity) VALUES (?, ?, ?, ?, ?)',
+                     (user_id, username, first_name, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
     for key, val in kwargs.items():
         conn.execute(f'UPDATE users SET {key} = ? WHERE user_id = ?', (val, user_id))
     conn.commit()
@@ -97,21 +86,19 @@ def get_stats(db_name):
     cur = conn.cursor()
     cur.execute('SELECT COUNT(*) FROM users')
     total = cur.fetchone()[0]
-    cur.execute('SELECT COUNT(*) FROM users WHERE task1_done=1')
-    task1 = cur.fetchone()[0]
-    cur.execute('SELECT COUNT(*) FROM users WHERE task2_done=1')
-    task2 = cur.fetchone()[0]
-    cur.execute('SELECT COUNT(*) FROM users WHERE step=4')
-    completed = cur.fetchone()[0]
-    cur.execute('SELECT COUNT(*) FROM users WHERE waiting_screenshot=1')
-    stuck = cur.fetchone()[0]
+    cur.execute('SELECT COUNT(*) FROM users WHERE task1=1')
+    t1 = cur.fetchone()[0]
+    cur.execute('SELECT COUNT(*) FROM users WHERE task2=1')
+    t2 = cur.fetchone()[0]
+    cur.execute('SELECT COUNT(*) FROM users WHERE step=3')
+    done = cur.fetchone()[0]
     conn.close()
-    return total, task1, task2, completed, stuck
+    return total, t1, t2, done
 
 def get_all_users(db_name):
     conn = sqlite3.connect(db_name)
     cur = conn.cursor()
-    cur.execute('SELECT user_id, username, task1_done, task2_done, subs_done, player_id, step FROM users ORDER BY date DESC')
+    cur.execute('SELECT user_id, username, first_name, task1, task2, step, date FROM users ORDER BY date DESC LIMIT 30')
     rows = cur.fetchall()
     conn.close()
     return rows
@@ -119,179 +106,224 @@ def get_all_users(db_name):
 def is_admin(username):
     return username and username in ADMINS
 
-def is_player_id(text):
-    return bool(re.match(r'^[A-Z0-9]{8,10}$', text.strip().upper().replace('#', '')))
+# ========== КЛАВИАТУРЫ ==========
+def main_menu(is_admin_user=False):
+    btn = [[InlineKeyboardButton("🎁 ПОЛУЧИТЬ НАГРАДУ", callback_data="start")]]
+    if is_admin_user:
+        btn.append([InlineKeyboardButton("👑 АДМИН", callback_data="admin")])
+    return InlineKeyboardMarkup(btn)
 
-def get_main_menu():
-    return InlineKeyboardMarkup([[InlineKeyboardButton("🎁 ПОЛУЧИТЬ НАГРАДУ", callback_data="start")]])
+def subs_menu():
+    kb = [[InlineKeyboardButton(f"📢 {ch['name']}", url=ch['url'])] for ch in CHANNELS]
+    kb.append([InlineKeyboardButton("✅ ПРОВЕРИТЬ", callback_data="check")])
+    kb.append([InlineKeyboardButton("❌ ОТМЕНА", callback_data="cancel")])
+    return InlineKeyboardMarkup(kb)
 
-def get_subs_keyboard():
-    keyboard = [[InlineKeyboardButton(f"📢 {ch['name']}", url=ch['url'])] for ch in CHANNELS]
-    keyboard.append([InlineKeyboardButton("✅ ПРОВЕРИТЬ", callback_data="check_subs")])
-    keyboard.append([InlineKeyboardButton("❌ ОТМЕНА", callback_data="cancel")])
-    return InlineKeyboardMarkup(keyboard)
-
-def get_task_keyboard(task_num, task_url, task_button):
+def task_menu(num, url, btn):
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton(task_button, url=task_url)],
-        [InlineKeyboardButton("📸 ОТПРАВИТЬ СКРИН", callback_data=f"task_{task_num}_screenshot")],
+        [InlineKeyboardButton(btn, url=url)],
+        [InlineKeyboardButton("📸 ОТПРАВИТЬ СКРИНШОТ", callback_data=f"scr_{num}")],
         [InlineKeyboardButton("◀️ НАЗАД", callback_data="menu")]
     ])
 
-def get_admin_keyboard():
+def admin_menu():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("📊 СТАТИСТИКА", callback_data="admin_stats")],
-        [InlineKeyboardButton("👥 ВСЕ ПОЛЬЗОВАТЕЛИ", callback_data="admin_users")],
-        [InlineKeyboardButton("⏰ ЗАСТРЯВШИЕ", callback_data="admin_stuck")],
+        [InlineKeyboardButton("📊 СТАТИСТИКА", callback_data="stats")],
+        [InlineKeyboardButton("👥 ПОЛЬЗОВАТЕЛИ", callback_data="users")],
         [InlineKeyboardButton("◀️ НАЗАД", callback_data="menu")]
     ])
 
+# ========== НАПОМИНАНИЯ ==========
 async def check_reminders(context: ContextTypes.DEFAULT_TYPE):
-    db_name = context.bot_data['db_name']
-    conn = sqlite3.connect(db_name)
+    db = context.bot_data['db']
+    conn = sqlite3.connect(db)
     cur = conn.cursor()
     now = datetime.now()
     two_hours_ago = (now - timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')
-    cur.execute('SELECT user_id, username, current_task FROM users WHERE waiting_screenshot=1 AND (reminder_sent=0 OR last_activity < ?)', (two_hours_ago,))
-    for user_id, username, current_task in cur.fetchall():
+    cur.execute('SELECT user_id, current_task FROM users WHERE waiting=1 AND (reminder=0 OR last_activity < ?)', (two_hours_ago,))
+    for uid, task in cur.fetchall():
         try:
-            await context.bot.send_message(
-                chat_id=user_id,
-                text=f"⏰ НАПОМИНАНИЕ!\n\nТы остановился на задании {current_task}/2\n\n📸 Отправь скриншот!"
-            )
-            cur.execute('UPDATE users SET reminder_sent=1, last_activity=? WHERE user_id=?', (now.strftime('%Y-%m-%d %H:%M:%S'), user_id))
+            await context.bot.send_message(uid, f"⏰ НАПОМИНАНИЕ!\n\nТы остановился на задании {task}/2\n\n📸 Отправь скриншот!")
+            cur.execute('UPDATE users SET reminder=1, last_activity=? WHERE user_id=?', (now.strftime('%Y-%m-%d %H:%M:%S'), uid))
             conn.commit()
         except:
             pass
     conn.close()
 
+# ========== ОБРАБОТЧИКИ ==========
 async def start(update, context):
     user = update.effective_user
     db = context.bot_data['db']
-    update_user(db, user.id, user.username, step=0)
-    text = f"{context.bot_data['name']}\n\nПривет, {user.first_name}!\n\n🔥 Выполни задания и получи награду!"
-    if is_admin(user.username):
-        await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("🎁 ПОЛУЧИТЬ", callback_data="start")],
-            [InlineKeyboardButton("👑 АДМИН", callback_data="admin_panel")]
-        ]))
-    else:
-        await update.message.reply_text(text, reply_markup=get_main_menu())
+    bot_idx = context.bot_data['bot_idx']
+    info = BOT_INFO[bot_idx]
+    
+    update_user(db, user.id, user.username, user.first_name, step=0)
+    
+    text = f"""
+<b>{info['name']}</b>
+
+━━━━━━━━━━━━━━━━━━━━━━
+Привет, {user.first_name}! 👋
+━━━━━━━━━━━━━━━━━━━━━━
+
+<b>📋 ЧТО НУЖНО СДЕЛАТЬ:</b>
+• Подписаться на каналы
+• Оформить СберПрайм за 1₽
+• Пройти опрос
+
+<b>🎁 ЧТО ТЫ ПОЛУЧИШЬ:</b>
+✅ {info['reward']}
+
+━━━━━━━━━━━━━━━━━━━━━━
+<b>⏱ Весь процесс занимает 2 минуты!</b>
+━━━━━━━━━━━━━━━━━━━━━━
+
+👇 <b>Нажми на кнопку:</b>
+"""
+    await update.message.reply_text(text, parse_mode='HTML', reply_markup=main_menu(is_admin(user.username)))
 
 async def callback(update, context):
     q = update.callback_query
     await q.answer()
     user = q.from_user
     db = context.bot_data['db']
+    bot_idx = context.bot_data['bot_idx']
+    info = BOT_INFO[bot_idx]
     data = q.data
 
-    if data == "admin_panel" and is_admin(user.username):
-        await q.edit_message_text("👑 АДМИН-ПАНЕЛЬ", reply_markup=get_admin_keyboard())
-    elif data == "admin_stats" and is_admin(user.username):
-        total, t1, t2, done, stuck = get_stats(db)
-        await q.edit_message_text(f"📊 СТАТИСТИКА\n\nВсего: {total}\nЗадание 1: {t1}\nЗадание 2: {t2}\nНаграда: {done}\nЗастряли: {stuck}", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ НАЗАД", callback_data="admin_panel")]]))
-    elif data == "admin_users" and is_admin(user.username):
+    # АДМИНКА
+    if data == "admin" and is_admin(user.username):
+        await q.edit_message_text("👑 АДМИН-ПАНЕЛЬ", reply_markup=admin_menu())
+    elif data == "stats" and is_admin(user.username):
+        total, t1, t2, done = get_stats(db)
+        await q.edit_message_text(f"📊 СТАТИСТИКА\n\n👥 Всего: {total}\n✅ Задание 1: {t1}\n✅ Задание 2: {t2}\n🎁 Получили промокод: {done}", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ НАЗАД", callback_data="admin")]]))
+    elif data == "users" and is_admin(user.username):
         users = get_all_users(db)
         text = "👥 ПОЛЬЗОВАТЕЛИ:\n\n"
-        for u in users[:20]:
-            uid, name, t1, t2, subs, pid, step = u
-            text += f"{'✅' if step==4 else '⏳'} @{name or uid} | 1:{t1} 2:{t2}\n"
-        await q.edit_message_text(text[:4000], reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ НАЗАД", callback_data="admin_panel")]]))
-    elif data == "admin_stuck" and is_admin(user.username):
-        conn = sqlite3.connect(db)
-        cur = conn.cursor()
-        cur.execute('SELECT user_id, username, current_task, last_activity FROM users WHERE waiting_screenshot=1')
-        stuck = cur.fetchall()
-        conn.close()
-        text = "⏰ ЗАСТРЯВШИЕ:\n\n" + "\n".join([f"@{u[1] or u[0]} | Задание {u[2]}" for u in stuck]) or "Нет"
-        await q.edit_message_text(text[:4000], reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ НАЗАД", callback_data="admin_panel")]]))
+        for uid, username, first_name, t1, t2, step, date in users:
+            status = "✅" if step == 3 else "⏳"
+            name = first_name or username or uid
+            text += f"{status} {name} | 1:{t1} 2:{t2}\n"
+        await q.edit_message_text(text[:4000], reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ НАЗАД", callback_data="admin")]]))
+
+    # ОСНОВНОЙ ФЛОУ
     elif data == "start":
-        update_user(db, user.id, user.username, step=1)
-        await q.edit_message_text("📢 ПОДПИШИСЬ НА КАНАЛЫ:", reply_markup=get_subs_keyboard())
-    elif data == "check_subs":
-        update_user(db, user.id, user.username, subs_done=1, last_activity=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        await q.edit_message_text("✅ ПОДПИСКИ ПОДТВЕРЖДЕНЫ!\n\nЗадание 1/2:", reply_markup=get_task_keyboard(1, TASKS[0]['url'], TASKS[0]['button']))
+        update_user(db, user.id, user.username, user.first_name, step=1)
+        await q.edit_message_text(f"📢 ПОДПИШИСЬ НА КАНАЛЫ:", reply_markup=subs_menu())
+    
+    elif data == "check":
+        update_user(db, user.id, user.username, user.first_name, subs=1, last_activity=datetime.now().strftime('%Y-%m-%d %H:%M:%S'), reminder=0)
+        await q.edit_message_text(f"✅ ПОДПИСКИ ПОДТВЕРЖДЕНЫ!\n\n📌 ЗАДАНИЕ 1/2:\nОформи СберПрайм за 1₽\n\n🔗 Нажми на кнопку, оформи и отправь скриншот:",
+                                  reply_markup=task_menu(1, TASKS[0]['url'], TASKS[0]['button']))
+    
     elif data == "menu":
-        if is_admin(user.username):
-            await q.edit_message_text("Меню:", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🎁 ПОЛУЧИТЬ", callback_data="start")], [InlineKeyboardButton("👑 АДМИН", callback_data="admin_panel")]]))
-        else:
-            await q.edit_message_text("Меню:", reply_markup=get_main_menu())
+        text = f"""
+<b>{info['name']}</b>
+
+━━━━━━━━━━━━━━━━━━━━━━
+<b>📋 ЧТО НУЖНО СДЕЛАТЬ:</b>
+• Подписаться на каналы
+• Оформить СберПрайм за 1₽
+• Пройти опрос
+
+<b>🎁 ЧТО ТЫ ПОЛУЧИШЬ:</b>
+✅ {info['reward']}
+━━━━━━━━━━━━━━━━━━━━━━
+"""
+        await q.edit_message_text(text, parse_mode='HTML', reply_markup=main_menu(is_admin(user.username)))
+    
     elif data == "cancel":
-        update_user(db, user.id, user.username, step=0)
-        await q.edit_message_text("❌ Отменено", reply_markup=get_main_menu())
-    elif data == "task_1_screenshot":
-        update_user(db, user.id, user.username, waiting_screenshot=1, current_task=1, last_activity=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        await q.edit_message_text("📸 ОТПРАВЬ СКРИНШОТ СБЕРПРАЙМА")
-    elif data == "task_2_screenshot":
+        update_user(db, user.id, user.username, user.first_name, step=0, waiting=0)
+        await q.edit_message_text("❌ ОТМЕНЕНО", reply_markup=main_menu(is_admin(user.username)))
+    
+    elif data == "scr_1":
+        update_user(db, user.id, user.username, user.first_name, waiting=1, current_task=1, last_activity=datetime.now().strftime('%Y-%m-%d %H:%M:%S'), reminder=0)
+        await q.edit_message_text(f"📸 ОТПРАВЬ СКРИНШОТ ПОДТВЕРЖДЕНИЯ ОФОРМЛЕНИЯ СБЕРПРАЙМА\n\n⏱ Проверка займет 3 секунды...")
+    
+    elif data == "scr_2":
         udata = get_user(db, user.id)
         if udata and udata[1] == 1:
-            update_user(db, user.id, user.username, waiting_screenshot=1, current_task=2, last_activity=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-            await q.edit_message_text("📸 ОТПРАВЬ СКРИНШОТ ОПРОСА")
+            update_user(db, user.id, user.username, user.first_name, waiting=1, current_task=2, last_activity=datetime.now().strftime('%Y-%m-%d %H:%M:%S'), reminder=0)
+            await q.edit_message_text(f"📸 ОТПРАВЬ СКРИНШОТ ПОДТВЕРЖДЕНИЯ ПРОХОЖДЕНИЯ ОПРОСА\n\n⏱ Проверка займет 3 секунды...")
         else:
-            await q.answer("Сначала задание 1!", show_alert=True)
-    elif data == "claim_reward":
-        udata = get_user(db, user.id)
-        if udata and udata[1] == 1 and udata[2] == 1:
-            update_user(db, user.id, user.username, step=3)
-            await q.edit_message_text("🎁 ОТПРАВЬ СВОЙ ID (пример: 2YU9R0P8C)")
+            await q.answer("Сначала выполни задание 1!", show_alert=True)
 
-async def photo_handler(update, context):
+async def photo(update, context):
     user = update.effective_user
     db = context.bot_data['db']
+    bot_idx = context.bot_data['bot_idx']
+    info = BOT_INFO[bot_idx]
+    
     udata = get_user(db, user.id)
     if not udata or udata[4] != 1:
-        await update.message.reply_text("❌ Сейчас не нужно")
+        await update.message.reply_text("❌ Сейчас не нужно отправлять скриншот")
         return
-    current_task = udata[5]
-    msg = await update.message.reply_text("⏳ ПРОВЕРКА...")
+    task = udata[5]
+    msg = await update.message.reply_text("⏳ ПРОВЕРКА СКРИНШОТА...")
     await asyncio.sleep(3)
     await msg.delete()
-    if current_task == 1:
-        update_user(db, user.id, user.username, task1_done=1, waiting_screenshot=0, last_activity=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        await update.message.reply_text("✅ ЗАДАНИЕ 1 ВЫПОЛНЕНО!\n\nЗадание 2/2:", reply_markup=get_task_keyboard(2, TASKS[1]['url'], TASKS[1]['button']))
+    
+    if task == 1:
+        update_user(db, user.id, user.username, user.first_name, task1=1, waiting=0, last_activity=datetime.now().strftime('%Y-%m-%d %H:%M:%S'), reminder=0)
+        await update.message.reply_text(f"✅ ЗАДАНИЕ 1 ВЫПОЛНЕНО!\n\n📌 ЗАДАНИЕ 2/2: ПРОЙДИ ОПРОС\n\n🔗 Нажми на кнопку, пройди и отправь скриншот:",
+                                        reply_markup=task_menu(2, TASKS[1]['url'], TASKS[1]['button']))
     else:
-        update_user(db, user.id, user.username, task2_done=1, waiting_screenshot=0, last_activity=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        await update.message.reply_text("✅ ЗАДАНИЕ 2 ВЫПОЛНЕНО!\n\nПолучи награду!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🎁 ПОЛУЧИТЬ", callback_data="claim_reward")]]))
+        update_user(db, user.id, user.username, user.first_name, task2=1, waiting=0, last_activity=datetime.now().strftime('%Y-%m-%d %H:%M:%S'), reminder=0, step=3)
+        
+        await update.message.reply_text(f"""
+✅ ВСЕ ЗАДАНИЯ ВЫПОЛНЕНЫ!
 
-async def text_handler(update, context):
-    user = update.effective_user
-    db = context.bot_data['db']
-    udata = get_user(db, user.id)
-    if udata and udata[0] == 3:
-        clean = update.message.text.strip().upper().replace('#', '')
-        if is_player_id(clean):
-            update_user(db, user.id, user.username, player_id=clean, step=4)
-            await update.message.reply_text(f"✅ ID ПРИНЯТ: {clean}\n\n🎁 НАГРАДА В ТЕЧЕНИЕ 12 ЧАСОВ!")
-        else:
-            await update.message.reply_text("❌ НЕВЕРНЫЙ ID\nПример: 2YU9R0P8C")
+━━━━━━━━━━━━━━━━━━━━━━
+🎁 ТВОЯ НАГРАДА:
+{info['reward']}
 
-async def run_bot(token, name, num):
-    db = f'users_{num}.db'
+🔑 АКТИВИРУЙ ПРОМОКОД:
+<code>{info['promo']}</code>
+
+━━━━━━━━━━━━━━━━━━━━━━
+📝 Инструкция по активации:
+1. Скопируй промокод
+2. Введи в игре/приложении
+3. Получи награду сразу!
+
+Спасибо за участие! 🎮
+━━━━━━━━━━━━━━━━━━━━━━
+""", parse_mode='HTML')
+
+# ========== ЗАПУСК ОДНОГО БОТА ==========
+async def run_bot(token, idx):
+    db = f'users_{idx+1}.db'
     init_db(db)
+    
     app = Application.builder().token(token).build()
     app.bot_data['db'] = db
-    app.bot_data['name'] = name
+    app.bot_data['bot_idx'] = idx
+    
     if app.job_queue:
         app.job_queue.run_repeating(check_reminders, interval=7200, first=10)
+    
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(callback))
-    app.add_handler(MessageHandler(filters.PHOTO, photo_handler))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler))
+    app.add_handler(MessageHandler(filters.PHOTO, photo))
+    
     await app.initialize()
     await app.start()
     await app.updater.start_polling()
-    print(f"✅ {name} запущен")
+    print(f"✅ {BOT_INFO[idx]['name']} запущен")
+    
     while True:
         await asyncio.sleep(1)
 
+# ========== ЗАПУСК ВСЕХ ==========
 async def main():
-    import threading
-    threading.Thread(target=run_flask, daemon=True).start()
     print("🚀 ЗАПУСК 9 БОТОВ...")
+    print(f"👑 Админы: {', '.join(ADMINS)}")
+    
     tasks = []
-    for i, (token, name) in enumerate(zip(BOT_TOKENS, BOT_NAMES)):
-        tasks.append(asyncio.create_task(run_bot(token, name, i+1)))
+    for i, token in enumerate(BOT_TOKENS):
+        tasks.append(asyncio.create_task(run_bot(token, i)))
         await asyncio.sleep(2)
+    
     await asyncio.gather(*tasks)
 
 if __name__ == '__main__':
