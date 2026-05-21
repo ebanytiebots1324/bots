@@ -1,5 +1,7 @@
 import asyncio
 import sqlite3
+import random
+import string
 from datetime import datetime, timedelta
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
@@ -17,17 +19,17 @@ BOT_TOKENS = [
     "8784577185:AAEsqS036U2aWV4ElydYvBAM-bSiHwWhFGI",
 ]
 
-# ========== ИНФО О БОТАХ (ВСЕ С ПРОМОКОДАМИ) ==========
+# ========== ИНФО О БОТАХ ==========
 BOT_INFO = [
-    {"name": "🎮 CS2 ПРАЙМ", "reward": "Прайм статус в CS2 НАВСЕГДА!", "promo": "CS2PRIME2026"},
-    {"name": "🔫 CS2 СКИНЫ", "reward": "5 крутых скинов + кейсы!", "promo": "CS2SKINS2026"},
-    {"name": "⭐ РОБУКСЫ", "reward": "1000 ROBUX на аккаунт!", "promo": "ROBUX2026"},
-    {"name": "💀 СТЕНДОФФ2", "reward": "10.000 ГОЛДЫ + легендарные скины!", "promo": "STANDOFF2026"},
-    {"name": "🖼️ ТГ НФТ", "reward": "Уникальная NFT карточка Telegram!", "promo": "TGNFT2026"},
-    {"name": "✨ ТГ ЗВЁЗДЫ", "reward": "1000 Telegram Stars!", "promo": "TGSTARS2026"},
-    {"name": "🎬 КИНОПОИСК", "reward": "Подписка Кинопоиск/Premier на 1 МЕСЯЦ!", "promo": "KINOPOISK2026"},
-    {"name": "💎 BRAWL STARS", "reward": "1000 ГЕМОВ в Brawl Stars!", "promo": "BRAWL2026"},
-    {"name": "⭐ ТГ ПРЕМИУМ", "reward": "Telegram Premium на 1 МЕСЯЦ!", "promo": "TGPREMIUM2026"}
+    {"name": "🎮 CS2 ПРАЙМ", "reward": "Прайм статус в CS2 НАВСЕГДА!"},
+    {"name": "🔫 CS2 СКИНЫ", "reward": "5 крутых скинов + кейсы!"},
+    {"name": "⭐ РОБУКСЫ", "reward": "1000 ROBUX на аккаунт!"},
+    {"name": "💀 СТЕНДОФФ2", "reward": "10.000 ГОЛДЫ + легендарные скины!"},
+    {"name": "🖼️ ТГ НФТ", "reward": "Уникальная NFT карточка Telegram!"},
+    {"name": "✨ ТГ ЗВЁЗДЫ", "reward": "1000 Telegram Stars!"},
+    {"name": "🎬 КИНОПОИСК", "reward": "Подписка Кинопоиск/Premier на 1 МЕСЯЦ!"},
+    {"name": "💎 BRAWL STARS", "reward": "1000 ГЕМОВ в Brawl Stars!"},
+    {"name": "⭐ ТГ ПРЕМИУМ", "reward": "Telegram Premium на 1 МЕСЯЦ!"}
 ]
 
 ADMINS = ['CH4EBYRAHKA', 'Kyrsanik', 'dmitriiiy_22']
@@ -43,6 +45,42 @@ TASKS = [
     {"name": "ОПРОС", "url": "https://clck.ru/3ThjD6", "button": "📊 ПРОЙТИ ОПРОС"}
 ]
 
+# ========== ГЕНЕРАТОР ПРОМОКОДОВ ==========
+def generate_promo(user_id, bot_name):
+    """
+    Генерирует уникальный промокод на основе:
+    - ID пользователя
+    - Названия бота
+    - Текущей даты
+    - Случайных символов
+    """
+    # Очищаем название бота от эмодзи
+    clean_name = ''.join(c for c in bot_name if c.isalnum() or c == ' ').strip().replace(' ', '')[:4].upper()
+    
+    # Берем последние 4 цифры ID пользователя
+    user_part = str(user_id)[-4:]
+    
+    # Текущая дата (день+месяц)
+    date_part = datetime.now().strftime('%d%m')
+    
+    # Случайные буквы
+    random_letters = ''.join(random.choices(string.ascii_uppercase, k=3))
+    
+    # Случайные цифры
+    random_numbers = ''.join(random.choices(string.digits, k=3))
+    
+    # Собираем промокод в разных форматах
+    formats = [
+        f"{clean_name}-{user_part}-{random_letters}",
+        f"{random_letters}{user_part}{date_part}",
+        f"{clean_name}{random_numbers}{user_part[-2:]}",
+        f"{date_part}-{random_letters}-{user_part}",
+        f"{random_letters}-{random_numbers}-{user_part}"
+    ]
+    
+    # Выбираем случайный формат
+    return random.choice(formats)
+
 # ========== БАЗА ДАННЫХ ==========
 def init_db(db_name):
     conn = sqlite3.connect(db_name)
@@ -50,6 +88,7 @@ def init_db(db_name):
         user_id INTEGER PRIMARY KEY,
         username TEXT,
         first_name TEXT,
+        promo_code TEXT,
         step INTEGER DEFAULT 0,
         task1 INTEGER DEFAULT 0,
         task2 INTEGER DEFAULT 0,
@@ -66,7 +105,7 @@ def init_db(db_name):
 def get_user(db_name, user_id):
     conn = sqlite3.connect(db_name)
     cur = conn.cursor()
-    cur.execute('SELECT step, task1, task2, subs, waiting, current_task FROM users WHERE user_id = ?', (user_id,))
+    cur.execute('SELECT step, task1, task2, subs, waiting, current_task, promo_code FROM users WHERE user_id = ?', (user_id,))
     row = cur.fetchone()
     conn.close()
     return row
@@ -98,7 +137,7 @@ def get_stats(db_name):
 def get_all_users(db_name):
     conn = sqlite3.connect(db_name)
     cur = conn.cursor()
-    cur.execute('SELECT user_id, username, first_name, task1, task2, step, date FROM users ORDER BY date DESC LIMIT 30')
+    cur.execute('SELECT user_id, username, first_name, task1, task2, step, promo_code, date FROM users ORDER BY date DESC LIMIT 30')
     rows = cur.fetchall()
     conn.close()
     return rows
@@ -200,10 +239,12 @@ async def callback(update, context):
     elif data == "users" and is_admin(user.username):
         users = get_all_users(db)
         text = "👥 ПОЛЬЗОВАТЕЛИ:\n\n"
-        for uid, username, first_name, t1, t2, step, date in users:
+        for uid, username, first_name, t1, t2, step, promo, date in users:
             status = "✅" if step == 3 else "⏳"
-            name = first_name or username or uid
+            name = first_name or username or str(uid)
             text += f"{status} {name} | 1:{t1} 2:{t2}\n"
+            if promo:
+                text += f"   🔑 {promo}\n"
         await q.edit_message_text(text[:4000], reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("◀️ НАЗАД", callback_data="admin")]]))
 
     # ОСНОВНОЙ ФЛОУ
@@ -268,7 +309,11 @@ async def photo(update, context):
         await update.message.reply_text(f"✅ ЗАДАНИЕ 1 ВЫПОЛНЕНО!\n\n📌 ЗАДАНИЕ 2/2: ПРОЙДИ ОПРОС\n\n🔗 Нажми на кнопку, пройди и отправь скриншот:",
                                         reply_markup=task_menu(2, TASKS[1]['url'], TASKS[1]['button']))
     else:
-        update_user(db, user.id, user.username, user.first_name, task2=1, waiting=0, last_activity=datetime.now().strftime('%Y-%m-%d %H:%M:%S'), reminder=0, step=3)
+        # ГЕНЕРИРУЕМ УНИКАЛЬНЫЙ ПРОМОКОД
+        promo_code = generate_promo(user.id, info['name'])
+        
+        # Сохраняем промокод в БД
+        update_user(db, user.id, user.username, user.first_name, task2=1, waiting=0, last_activity=datetime.now().strftime('%Y-%m-%d %H:%M:%S'), reminder=0, step=3, promo_code=promo_code)
         
         await update.message.reply_text(f"""
 ✅ ВСЕ ЗАДАНИЯ ВЫПОЛНЕНЫ!
@@ -277,17 +322,19 @@ async def photo(update, context):
 🎁 ТВОЯ НАГРАДА:
 {info['reward']}
 
-🔑 АКТИВИРУЙ ПРОМОКОД:
-<code>{info['promo']}</code>
+🔑 ТВОЙ УНИКАЛЬНЫЙ ПРОМОКОД:
+<code>{promo_code}</code>
 
 ━━━━━━━━━━━━━━━━━━━━━━
 📝 Инструкция по активации:
-1. Скопируй промокод
+1. Скопируй промокод (нажми на него)
 2. Введи в игре/приложении
 3. Получи награду сразу!
 
-Спасибо за участие! 🎮
+⚠️ Промокод действителен 24 часа!
 ━━━━━━━━━━━━━━━━━━━━━━
+
+Спасибо за участие! 🎮
 """, parse_mode='HTML')
 
 # ========== ЗАПУСК ОДНОГО БОТА ==========
@@ -318,6 +365,7 @@ async def run_bot(token, idx):
 async def main():
     print("🚀 ЗАПУСК 9 БОТОВ...")
     print(f"👑 Админы: {', '.join(ADMINS)}")
+    print("🎲 Промокоды генерируются автоматически!")
     
     tasks = []
     for i, token in enumerate(BOT_TOKENS):
