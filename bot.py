@@ -19,69 +19,69 @@ BOT_TOKENS = [
     "8784577185:AAEsqS036U2aWV4ElydYvBAM-bSiHwWhFGI",
 ]
 
-# ========== ДИЗАЙН БОТОВ ==========
+# ========== УНИКАЛЬНЫЙ ДИЗАЙН ДЛЯ КАЖДОГО БОТА ==========
 BOT_DESIGN = [
     {
         "name": "🎮 CS2 ПРАЙМ",
         "emoji": "🎮",
-        "color": "🔫",
-        "reward": "Прайм статус в CS2 НАВСЕГДА!",
+        "color": "⚔️",
+        "reward": "✅ ПРАЙМ СТАТУС в CS2 НАВСЕГДА!\n✅ Игра без читеров\n✅ Соревновательный режим\n✅ Еженедельные скины и кейсы",
         "short_reward": "Прайм статус"
     },
     {
         "name": "🔫 CS2 СКИНЫ",
         "emoji": "🔫",
-        "color": "⚡",
-        "reward": "5 крутых скинов + кейсы + нож в подарок!",
+        "color": "💥",
+        "reward": "✅ 5 КРУТЫХ СКИНОВ на выбор\n✅ Кейсы + ключи бесплатно\n✅ Нож или перчатки (рандом)\n✅ Патчи и стикеры",
         "short_reward": "5 скинов"
     },
     {
         "name": "⭐ РОБУКСЫ",
         "emoji": "⭐",
         "color": "💰",
-        "reward": "1000 ROBUX на аккаунт!",
+        "reward": "✅ 1000 ROBUX на аккаунт\n✅ Доступ к платным вещам\n✅ Крутые скины и эмоции\n✅ Премиум в играх Roblox",
         "short_reward": "1000 ROBUX"
     },
     {
         "name": "💀 СТЕНДОФФ2",
         "emoji": "💀",
         "color": "🔥",
-        "reward": "10.000 ГОЛДЫ + легендарные скины!",
+        "reward": "✅ 10.000 ГОЛДЫ на счёт\n✅ Легендарные скины\n✅ Боевой пропуск\n✅ Ножи и перчатки",
         "short_reward": "10.000 голды"
     },
     {
         "name": "🖼️ ТГ НФТ",
         "emoji": "🖼️",
         "color": "🎨",
-        "reward": "Уникальная NFT карточка Telegram!",
+        "reward": "✅ Уникальная NFT карточка Telegram\n✅ Ограниченный тираж\n✅ Возможность продать\n✅ Статус коллекционера",
         "short_reward": "NFT карта"
     },
     {
         "name": "✨ ТГ ЗВЁЗДЫ",
         "emoji": "✨",
         "color": "🌟",
-        "reward": "1000 Telegram Stars!",
+        "reward": "✅ 1000 Telegram Stars\n✅ Покупка платных функций\n✅ Отправка анимаций\n✅ Доступ к премиум ботам",
         "short_reward": "1000 Stars"
     },
     {
         "name": "🎬 КИНОПОИСК",
         "emoji": "🎬",
         "color": "📽️",
-        "reward": "Подписка Кинопоиск/Premier на 1 МЕСЯЦ!",
+        "reward": "✅ Подписка Кинопоиск/Premier на 1 МЕСЯЦ\n✅ Тысячи фильмов и сериалов\n✅ Без рекламы\n✅ Офлайн просмотр",
         "short_reward": "Подписка"
     },
     {
         "name": "💎 BRAWL STARS",
         "emoji": "💎",
         "color": "⚔️",
-        "reward": "1000 ГЕМОВ в Brawl Stars!",
+        "reward": "✅ 1000 ГЕМОВ в Brawl Stars\n✅ Легендарных бойцов\n✅ Боевые пропуска\n✅ Скины и кубки",
         "short_reward": "1000 гемов"
     },
     {
         "name": "⭐ ТГ ПРЕМИУМ",
         "emoji": "⭐",
         "color": "💎",
-        "reward": "Telegram Premium на 1 МЕСЯЦ!",
+        "reward": "✅ Telegram Premium на 1 МЕСЯЦ\n✅ Увеличенные лимиты\n✅ Стикеры и реакции\n✅ Быстрая загрузка",
         "short_reward": "TG Premium"
     }
 ]
@@ -261,7 +261,7 @@ async def start(update, context):
 
 🎁 ЧТО ТЫ ПОЛУЧИШЬ:
 
-   ✅ {design['reward']}
+{design['reward']}
 
 {design['color']}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{design['color']}
 
@@ -357,7 +357,7 @@ async def callback(update, context):
 
 🎁 ЧТО ТЫ ПОЛУЧИШЬ:
 
-   ✅ {design['reward']}
+{design['reward']}
 
 {design['emoji']} ═══════════════════════════ {design['emoji']}
 """
@@ -450,7 +450,8 @@ async def photo(update, context):
 {design['color']}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{design['color']}
 
 🎁 ТВОЯ НАГРАДА:
-   {design['reward']}
+
+{design['reward']}
 
 🔑 ТВОЙ УНИКАЛЬНЫЙ ПРОМОКОД:
 
