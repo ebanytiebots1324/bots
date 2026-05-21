@@ -8,15 +8,15 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Mess
 
 # ========== ТОКЕНЫ 9 БОТОВ ==========
 BOT_TOKENS = [
-    "8633809924:AAGLwVQSfBDzQUNU3GKhceMUV_pzNtpcAHA",
-    "8315119156:AAE6dIIYMsE80f7TVAyby_qMxKtqdzm5EOo",
-    "8583713671:AAEeKGKmZBzQ0rqsiDShGXjOnijN6G-32-w",
-    "8445466695:AAGORyjHM8ghSs2jhKblwwrO0-aJNp6Zuq8",
-    "8408906854:AAH1o9LAf9kKKMh6mmZj0BGAlsE670DjslA",
-    "8622662261:AAFfT6Ye6tB8O01QhjYRYinHrxpr9ZykvOw",
-    "8562359492:AAFWc3XXKAtCkCh_Y8uznLcY6lFZFdI7gn0",
-    "8644384412:AAFi1bGQdE9dm9rLnCi51lvpLaXphdUyx0s",
-    "8784577185:AAEsqS036U2aWV4ElydYvBAM-bSiHwWhFGI",
+    "8583713671:AAEeKGKmZBzQ0rqsiDShGXjOnijN6G-32-w",  # 🎮 CS2 ПРАЙМ (был РОБУКСЫ)
+    "8315119156:AAE6dIIYMsE80f7TVAyby_qMxKtqdzm5EOo",  # 🔫 CS2 СКИНЫ
+    "8633809924:AAGLwVQSfBDzQUNU3GKhceMUV_pzNtpcAHA",  # ⭐ РОБУКСЫ (был CS2 ПРАЙМ)
+    "8445466695:AAGORyjHM8ghSs2jhKblwwrO0-aJNp6Zuq8",  # 💀 СТЕНДОФФ2
+    "8408906854:AAH1o9LAf9kKKMh6mmZj0BGAlsE670DjslA",  # 🖼️ ТГ НФТ
+    "8622662261:AAFfT6Ye6tB8O01QhjYRYinHrxpr9ZykvOw",  # ✨ ТГ ЗВЁЗДЫ
+    "8562359492:AAFWc3XXKAtCkCh_Y8uznLcY6lFZFdI7gn0",  # 🎬 КИНОПОИСК
+    "8644384412:AAFi1bGQdE9dm9rLnCi51lvpLaXphdUyx0s",  # 💎 BRAWL STARS
+    "8784577185:AAEsqS036U2aWV4ElydYvBAM-bSiHwWhFGI",  # ⭐ ТГ ПРЕМИУМ
 ]
 
 # ========== УНИКАЛЬНЫЙ ДИЗАЙН ДЛЯ КАЖДОГО БОТА ==========
